@@ -1,0 +1,924 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Crush LeetCode Admin Dashboard</title>
+    <link rel="icon" type="image/png" href="/admin-logo.png?v=20260430" />
+    <link rel="apple-touch-icon" href="/admin-logo.png?v=20260430" />
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #111827;
+        --muted: #6b7280;
+        --line: #e5e7eb;
+        --paper: #f4f7fb;
+        --card: #ffffff;
+        --brand: #2563eb;
+        --brand-dark: #1d4ed8;
+        --green: #047857;
+        --amber: #b45309;
+        --red: #b91c1c;
+        --orange: #f59e0b;
+        --teal: #0f766e;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top left, rgba(37, 99, 235, 0.10), transparent 28rem),
+          radial-gradient(circle at top right, rgba(245, 158, 11, 0.11), transparent 26rem),
+          var(--paper);
+        font-family: "Avenir Next", "PingFang SC", "Hiragino Sans GB", ui-sans-serif, system-ui, sans-serif;
+      }
+
+      button, input, select {
+        font: inherit;
+      }
+
+      .shell {
+        width: min(1240px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 22px 0 42px;
+        animation: pageIn 320ms ease-out both;
+      }
+
+      .topbar {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 14px;
+        padding: 14px 16px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.86);
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+      }
+
+      .brand {
+        display: flex;
+        gap: 13px;
+        align-items: center;
+      }
+
+      .logo {
+        width: 44px;
+        height: 44px;
+        border-radius: 13px;
+        box-shadow: 0 10px 24px rgba(17, 24, 39, 0.14);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 24px;
+        letter-spacing: -0.02em;
+      }
+
+      .subtitle {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .banner {
+        margin-bottom: 16px;
+        padding: 12px 14px 12px 16px;
+        border: 1px solid #bfdbfe;
+        border-left: 5px solid var(--brand);
+        border-radius: 12px;
+        color: #1e3a8a;
+        background: #eff6ff;
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      .panel {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: var(--card);
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+        transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+      }
+
+      .panel:hover {
+        border-color: #d1d5db;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.07);
+      }
+
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .metric {
+        position: relative;
+        overflow: hidden;
+        padding: 16px;
+      }
+
+      .metric::before {
+        content: "";
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 5px;
+        background: var(--brand);
+      }
+
+      .metric:nth-child(2)::before { background: var(--green); }
+      .metric:nth-child(3)::before { background: var(--red); }
+      .metric:nth-child(4)::before { background: var(--orange); }
+
+      .metric span {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .metric strong {
+        display: block;
+        margin-top: 8px;
+        font-size: 28px;
+        letter-spacing: -0.03em;
+      }
+
+      .workspace {
+        display: grid;
+        grid-template-columns: 360px minmax(0, 1fr);
+        gap: 16px;
+        align-items: stretch;
+      }
+
+      .card {
+        position: relative;
+        overflow: hidden;
+        padding: 18px;
+      }
+
+      .workspace > .card:not(.wide) {
+        min-height: 470px;
+      }
+
+      .managed-card {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .managed-card .table-wrap {
+        flex: 1;
+        max-height: 282px;
+        overflow: auto;
+      }
+
+      .card::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto;
+        height: 4px;
+        background: var(--brand);
+      }
+
+      .card:nth-child(2)::before { background: var(--teal); }
+      .card.wide::before { background: var(--orange); }
+
+      .wide {
+        grid-column: 1 / -1;
+      }
+
+      .card-head {
+        margin-bottom: 14px;
+      }
+
+      .card h2 {
+        margin: 0;
+        font-size: 18px;
+        letter-spacing: -0.01em;
+      }
+
+      .card p {
+        margin: 6px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      label {
+        display: block;
+        margin: 0 0 7px;
+        color: #374151;
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      input, select {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 10px 11px;
+        color: var(--ink);
+        background: #ffffff;
+        outline: none;
+      }
+
+      input:focus, select:focus {
+        border-color: rgba(37, 99, 235, 0.72);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+      }
+
+      .form-grid {
+        display: grid;
+        gap: 13px;
+      }
+
+      .button {
+        border: 0;
+        border-radius: 10px;
+        padding: 10px 13px;
+        cursor: pointer;
+        color: white;
+        background: var(--brand);
+        font-size: 13px;
+        font-weight: 800;
+        transition: transform 150ms ease, background 150ms ease, box-shadow 150ms ease;
+      }
+
+      .button:hover {
+        background: var(--brand-dark);
+        box-shadow: 0 10px 22px rgba(37, 99, 235, 0.16);
+        transform: translateY(-1px);
+      }
+      .button:disabled { cursor: not-allowed; opacity: 0.55; }
+
+      .button.secondary {
+        color: #374151;
+        border: 1px solid var(--line);
+        background: #ffffff;
+      }
+
+      .button.secondary:hover { background: #f9fafb; }
+
+      .button.danger {
+        color: white;
+        background: #dc2626;
+      }
+
+      .button.danger:hover { background: #b91c1c; }
+
+      .button.compact {
+        padding: 7px 10px;
+        border-radius: 9px;
+        font-size: 12px;
+      }
+
+      .code-box {
+        display: none;
+        margin-top: 14px;
+        padding: 14px;
+        border: 1px solid #86efac;
+        border-radius: 12px;
+        background: #f0fdf4;
+      }
+
+      .code-box-title {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        color: #166534;
+        font-size: 13px;
+        font-weight: 900;
+      }
+
+      .code-meta {
+        margin-bottom: 10px;
+        color: #4b5563;
+        font-size: 12px;
+        line-height: 1.55;
+      }
+
+      .code-box pre {
+        white-space: pre-wrap;
+        word-break: break-all;
+        margin: 0 0 10px;
+        padding: 12px;
+        border: 1px solid #bbf7d0;
+        border-radius: 10px;
+        background: #ffffff;
+        color: #111827;
+        font-family: "SF Mono", ui-monospace, Menlo, monospace;
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      .code-note {
+        margin-top: 8px;
+        color: #166534;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      .toolbar {
+        display: grid;
+        grid-template-columns: minmax(220px, 1fr) 150px auto;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+      }
+
+      .pagination {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .pager-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .pager-info {
+        font-weight: 800;
+        color: #374151;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+
+      th, td {
+        padding: 12px 10px;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      tbody tr:hover {
+        background: #f8fafc;
+      }
+
+      .status {
+        display: inline-flex;
+        border-radius: 999px;
+        padding: 4px 8px;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      .active { color: var(--green); background: #ecfdf5; }
+      .expired { color: var(--amber); background: #fffbeb; }
+      .revoked, .suspended { color: var(--red); background: #fef2f2; }
+      .unknown { color: var(--brand-dark); background: #eff6ff; }
+
+      .muted { color: var(--muted); }
+      .mono {
+        font-family: "SF Mono", ui-monospace, Menlo, monospace;
+        font-size: 12px;
+      }
+
+      .message {
+        min-height: 20px;
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      @keyframes pageIn {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .shell {
+          animation: none;
+        }
+
+        .panel,
+        .button {
+          transition: none;
+        }
+      }
+
+      @media (max-width: 960px) {
+        .topbar, .workspace, .metrics {
+          grid-template-columns: 1fr;
+        }
+
+        .topbar {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .toolbar {
+          grid-template-columns: 1fr;
+        }
+
+        .workspace > .card:not(.wide) {
+          min-height: auto;
+        }
+
+        .managed-card .table-wrap {
+          max-height: none;
+        }
+
+        .pagination {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        table {
+          min-width: 820px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <img class="logo" src="/admin-logo.png?v=20260430" alt="Crush LeetCode logo" />
+          <div>
+            <h1>Official Digest Admin</h1>
+            <div class="subtitle">管理官方周报内测用户、访问码和使用状态。</div>
+          </div>
+        </div>
+        <button class="button secondary compact" id="logout">退出登录</button>
+      </header>
+
+      <div class="banner" id="banner">当前为本机自托管后台。访问码明文只在签发时展示一次；服务端只保存 hash。停用用户会立即阻断官方周报发送。</div>
+
+      <section class="metrics">
+        <div class="panel metric"><span>Users</span><strong id="metricUsers">-</strong></div>
+        <div class="panel metric"><span>Active Codes</span><strong id="metricActiveCodes">-</strong></div>
+        <div class="panel metric"><span>Suspended</span><strong id="metricSuspended">-</strong></div>
+        <div class="panel metric"><span>Total Sends</span><strong id="metricUsage">-</strong></div>
+      </section>
+
+      <section class="workspace">
+        <div class="panel card">
+          <div class="card-head">
+            <h2>签发 / 创建用户</h2>
+            <p>发码会自动创建或更新用户。请复制后发给对应邮箱用户。</p>
+          </div>
+          <div class="form-grid">
+            <div>
+              <label for="recipientEmail">Recipient Email</label>
+              <input id="recipientEmail" type="email" placeholder="tester@example.com" />
+            </div>
+            <div>
+              <label for="githubUsername">GitHub Username</label>
+              <input id="githubUsername" placeholder="optional" />
+            </div>
+            <div>
+              <label for="expiresAt">Expires At</label>
+              <input id="expiresAt" type="datetime-local" />
+            </div>
+            <button class="button" id="issueCode">签发并显示 Code</button>
+          </div>
+          <div class="code-box" id="codeBox">
+            <div class="code-box-title">
+              <span>最新签发 Code</span>
+              <span class="status active">copy now</span>
+            </div>
+            <div class="code-meta" id="issuedCodeMeta"></div>
+            <pre id="issuedCode"></pre>
+            <button class="button secondary compact" id="copyCode">复制 Code</button>
+            <div class="code-note">这个明文 code 只会在本次签发后显示；刷新页面或离开后无法从后台找回，只能重新签发。</div>
+          </div>
+          <div class="message" id="message"></div>
+        </div>
+
+        <div class="panel card managed-card">
+          <div class="card-head">
+            <h2>用户管理</h2>
+            <p>用户状态是服务端强校验；Suspended 用户即使持有未过期 code 也无法发送。</p>
+          </div>
+          <div class="toolbar">
+            <input id="userSearch" placeholder="搜索邮箱或 GitHub 用户名" />
+            <select id="userStatusFilter">
+              <option value="all">All users</option>
+              <option value="active">Active</option>
+              <option value="suspended">Suspended</option>
+            </select>
+            <button class="button secondary" id="refresh">刷新</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Status</th>
+                  <th>Codes</th>
+                  <th>Activity</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="userRows">
+                <tr><td colspan="5" class="muted">加载中...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination">
+            <span id="userPageSummary">0 records</span>
+            <div class="pager-actions">
+              <button class="button secondary compact" id="userPrev">上一页</button>
+              <span class="pager-info" id="userPageInfo">1 / 1</span>
+              <button class="button secondary compact" id="userNext">下一页</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel card wide managed-card">
+          <div class="card-head">
+            <h2>访问码审计</h2>
+            <p>用于排查 code 是否使用、过期或被撤销。撤销 code 不会删除用户。</p>
+          </div>
+          <div class="toolbar">
+            <input id="codeSearch" placeholder="搜索邮箱或 GitHub 用户名" />
+            <select id="codeStatusFilter">
+              <option value="all">All codes</option>
+              <option value="active">Active</option>
+              <option value="expired">Expired</option>
+              <option value="revoked">Revoked</option>
+            </select>
+            <button class="button secondary" id="refreshCodes">刷新</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Code Status</th>
+                  <th>User Status</th>
+                  <th>Issued</th>
+                  <th>Expires</th>
+                  <th>Usage</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="codeRows">
+                <tr><td colspan="7" class="muted">加载中...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination">
+            <span id="codePageSummary">0 records</span>
+            <div class="pager-actions">
+              <button class="button secondary compact" id="codePrev">上一页</button>
+              <span class="pager-info" id="codePageInfo">1 / 1</span>
+              <button class="button secondary compact" id="codeNext">下一页</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const PAGE_SIZE = 8;
+      const state = {
+        users: [],
+        codes: [],
+        userPage: 1,
+        codePage: 1
+      };
+
+      function setMessage(text) {
+        $('message').textContent = text || '';
+      }
+
+      function fmt(value) {
+        if (!value) return '-';
+        return new Date(value).toLocaleString();
+      }
+
+      function esc(value) {
+        return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;'
+        })[char]);
+      }
+
+      function statusClass(value) {
+        return ['active', 'expired', 'revoked', 'suspended'].includes(value) ? value : 'unknown';
+      }
+
+      async function ensureSession() {
+        const response = await fetch('/api/admin/session', { credentials: 'same-origin' });
+        const data = await response.json().catch(() => ({}));
+        if (!data.authenticated) {
+          window.location.replace('/admin');
+          return false;
+        }
+        return true;
+      }
+
+      async function api(path, options = {}) {
+        const response = await fetch(path, {
+          ...options,
+          credentials: 'same-origin',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(options.headers || {})
+          }
+        });
+        const data = await response.json().catch(() => ({}));
+        if (response.status === 401) {
+          window.location.replace('/admin');
+          throw new Error('Admin session expired.');
+        }
+        if (!response.ok || data.ok === false) {
+          throw new Error(data.error || `Request failed: ${response.status}`);
+        }
+        return data;
+      }
+
+      function userMatches(user) {
+        const query = $('userSearch').value.trim().toLowerCase();
+        const status = $('userStatusFilter').value;
+        const haystack = `${user.email || ''} ${user.githubUsername || ''}`.toLowerCase();
+        return (!query || haystack.includes(query)) && (status === 'all' || user.status === status);
+      }
+
+      function codeMatches(code) {
+        const query = $('codeSearch').value.trim().toLowerCase();
+        const status = $('codeStatusFilter').value;
+        const haystack = `${code.recipientEmail || ''} ${code.githubUsername || ''}`.toLowerCase();
+        return (!query || haystack.includes(query)) && (status === 'all' || code.status === status);
+      }
+
+      function paginate(items, page) {
+        const pageCount = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
+        const safePage = Math.min(Math.max(1, page), pageCount);
+        const start = (safePage - 1) * PAGE_SIZE;
+        return {
+          page: safePage,
+          pageCount,
+          rows: items.slice(start, start + PAGE_SIZE),
+          total: items.length,
+          start: items.length ? start + 1 : 0,
+          end: Math.min(start + PAGE_SIZE, items.length)
+        };
+      }
+
+      function renderPagination(prefix, pageData) {
+        $(`${prefix}PageSummary`).textContent = pageData.total
+          ? `${pageData.start}-${pageData.end} / ${pageData.total} records`
+          : '0 records';
+        $(`${prefix}PageInfo`).textContent = `${pageData.page} / ${pageData.pageCount}`;
+        $(`${prefix}Prev`).disabled = pageData.page <= 1;
+        $(`${prefix}Next`).disabled = pageData.page >= pageData.pageCount;
+      }
+
+      function renderMetrics() {
+        const activeCodes = state.codes.filter((code) => code.status === 'active').length;
+        const suspended = state.users.filter((user) => user.status === 'suspended').length;
+        const usage = state.codes.reduce((sum, code) => sum + Number(code.usageCount || 0), 0);
+        $('metricUsers').textContent = state.users.length;
+        $('metricActiveCodes').textContent = activeCodes;
+        $('metricSuspended').textContent = suspended;
+        $('metricUsage').textContent = usage;
+      }
+
+      function renderUsers() {
+        const filtered = state.users.filter(userMatches);
+        const pageData = paginate(filtered, state.userPage);
+        state.userPage = pageData.page;
+        renderPagination('user', pageData);
+        $('userRows').innerHTML = pageData.rows.length
+          ? pageData.rows.map((user) => `
+              <tr>
+                <td>
+                  <strong>${esc(user.email)}</strong><br />
+                  <span class="muted">${esc(user.githubUsername || '-')}</span>
+                </td>
+                <td><span class="status ${statusClass(user.status)}">${esc(user.status)}</span></td>
+                <td>
+                  <strong>${Number(user.activeCodeCount || 0)}</strong> active<br />
+                  <span class="muted">${Number(user.codeCount || 0)} total, ${Number(user.revokedCodeCount || 0)} revoked</span>
+                </td>
+                <td>
+                  <span class="mono">${Number(user.totalUsageCount || 0)} sends</span><br />
+                  <span class="muted">last: ${esc(fmt(user.lastSeenAt || user.latestCodeUsedAt))}</span>
+                </td>
+                <td>
+                  <div class="actions">
+                    ${user.status === 'active'
+                      ? `<button class="button danger compact" data-user-status="suspended" data-user-id="${esc(user.id)}">停用</button>`
+                      : `<button class="button compact" data-user-status="active" data-user-id="${esc(user.id)}">启用</button>`}
+                  </div>
+                </td>
+              </tr>
+            `).join('')
+          : '<tr><td colspan="5" class="muted">暂无匹配用户。</td></tr>';
+      }
+
+      function renderCodes() {
+        const filtered = state.codes.filter(codeMatches);
+        const pageData = paginate(filtered, state.codePage);
+        state.codePage = pageData.page;
+        renderPagination('code', pageData);
+        $('codeRows').innerHTML = pageData.rows.length
+          ? pageData.rows.map((code) => `
+              <tr>
+                <td>
+                  <strong>${esc(code.recipientEmail)}</strong><br />
+                  <span class="muted">${esc(code.githubUsername || '-')}</span>
+                </td>
+                <td><span class="status ${statusClass(code.status)}">${esc(code.status)}</span></td>
+                <td><span class="status ${statusClass(code.userStatus)}">${esc(code.userStatus || 'active')}</span></td>
+                <td>${esc(fmt(code.issuedAt))}</td>
+                <td>${esc(fmt(code.expiresAt))}</td>
+                <td>
+                  <strong>${Number(code.usageCount || 0)}</strong><br />
+                  <span class="muted">last: ${esc(fmt(code.lastUsedAt))}</span>
+                </td>
+                <td>
+                  ${code.status === 'active'
+                    ? `<button class="button danger compact" data-revoke="${esc(code.id)}">撤销</button>`
+                    : '<span class="muted">-</span>'}
+                </td>
+              </tr>
+            `).join('')
+          : '<tr><td colspan="7" class="muted">暂无匹配访问码。</td></tr>';
+      }
+
+      function render() {
+        renderMetrics();
+        renderUsers();
+        renderCodes();
+      }
+
+      async function refresh() {
+        setMessage('Loading...');
+        const [users, codes] = await Promise.all([
+          api('/api/admin/users?limit=300'),
+          api('/api/admin/beta-codes?limit=500')
+        ]);
+        state.users = users.users || [];
+        state.codes = codes.codes || [];
+        state.userPage = 1;
+        state.codePage = 1;
+        render();
+        setMessage(`Loaded ${state.users.length} users, ${state.codes.length} codes.`);
+      }
+
+      $('refresh').addEventListener('click', () => refresh().catch((error) => setMessage(error.message)));
+      $('refreshCodes').addEventListener('click', () => refresh().catch((error) => setMessage(error.message)));
+      $('userSearch').addEventListener('input', () => {
+        state.userPage = 1;
+        renderUsers();
+      });
+      $('userStatusFilter').addEventListener('change', () => {
+        state.userPage = 1;
+        renderUsers();
+      });
+      $('codeSearch').addEventListener('input', () => {
+        state.codePage = 1;
+        renderCodes();
+      });
+      $('codeStatusFilter').addEventListener('change', () => {
+        state.codePage = 1;
+        renderCodes();
+      });
+      $('userPrev').addEventListener('click', () => {
+        state.userPage -= 1;
+        renderUsers();
+      });
+      $('userNext').addEventListener('click', () => {
+        state.userPage += 1;
+        renderUsers();
+      });
+      $('codePrev').addEventListener('click', () => {
+        state.codePage -= 1;
+        renderCodes();
+      });
+      $('codeNext').addEventListener('click', () => {
+        state.codePage += 1;
+        renderCodes();
+      });
+
+      $('issueCode').addEventListener('click', async () => {
+        try {
+          const expiresAtInput = $('expiresAt').value;
+          const body = {
+            recipientEmail: $('recipientEmail').value.trim(),
+            githubUsername: $('githubUsername').value.trim() || undefined,
+            expiresAt: expiresAtInput ? new Date(expiresAtInput).toISOString() : undefined
+          };
+          const data = await api('/api/issue-beta-code', {
+            method: 'POST',
+            body: JSON.stringify(body)
+          });
+          $('issuedCode').textContent = data.code;
+          $('issuedCodeMeta').textContent = `${data.recipientEmail} · expires ${fmt(data.expiresAt)}`;
+          $('codeBox').style.display = 'block';
+          setMessage(`Issued for ${data.recipientEmail}. Copy now; it will not be shown again.`);
+          await refresh();
+        } catch (error) {
+          setMessage(error.message);
+        }
+      });
+
+      $('copyCode').addEventListener('click', async () => {
+        await navigator.clipboard.writeText($('issuedCode').textContent);
+        setMessage('Code copied.');
+      });
+
+      $('userRows').addEventListener('click', async (event) => {
+        const button = event.target.closest('[data-user-status]');
+        if (!button) return;
+        const nextStatus = button.dataset.userStatus;
+        if (nextStatus === 'suspended' && !confirm('确认停用这个用户？未过期 code 也会被服务端拒绝。')) return;
+        try {
+          await api('/api/admin/users', {
+            method: 'POST',
+            body: JSON.stringify({
+              action: 'set-status',
+              id: button.dataset.userId,
+              status: nextStatus
+            })
+          });
+          setMessage(nextStatus === 'active' ? 'User activated.' : 'User suspended.');
+          await refresh();
+        } catch (error) {
+          setMessage(error.message);
+        }
+      });
+
+      $('codeRows').addEventListener('click', async (event) => {
+        const button = event.target.closest('[data-revoke]');
+        if (!button) return;
+        if (!confirm('确认撤销这个访问码？')) return;
+        try {
+          await api('/api/admin/beta-codes', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'revoke', id: button.dataset.revoke })
+          });
+          setMessage('Code revoked.');
+          await refresh();
+        } catch (error) {
+          setMessage(error.message);
+        }
+      });
+
+      $('logout').addEventListener('click', async () => {
+        await fetch('/api/admin/session', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'logout' })
+        });
+        window.location.replace('/admin');
+      });
+
+      ensureSession().then((ok) => {
+        if (ok) refresh().catch((error) => setMessage(error.message));
+      });
+    </script>
+  </body>
+</html>

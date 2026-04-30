@@ -1,0 +1,9 @@
+{
+  "name": "crush_leetcode_mailer_service",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Self-hosted official reminder email relay and admin console for Crush LeetCode.",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
