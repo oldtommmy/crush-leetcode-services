@@ -1,6 +1,6 @@
 # Crush LeetCode Services
 
-Crush LeetCode 的服务端仓库。当前只包含官方周报邮件服务，后续插件相关 API 也可以继续放在这里。
+Crush LeetCode 的服务端仓库。当前包含官方周报邮件服务，后续插件相关 API 也可以继续放在这里。
 
 ## 目录结构
 
@@ -26,18 +26,9 @@ crush-leetcode-services/
 
 ## 当前服务
 
-`apps/mailer` 是官方周报邮件服务：
+`apps/mailer` 是官方周报邮件服务，包含邮件发送、内测访问码和后台管理能力。
 
-- `POST /api/send-reminder`: 插件调用的邮件发送接口。
-- `POST /api/issue-beta-code`: 后台/脚本签发 beta code。
-- `/admin`: 后台登录页。
-- `/admin/dashboard`: 用户管理和访问码审计后台。
-
-公网默认地址：
-
-```text
-https://mail.crushlc.site
-```
+具体接口和部署地址不要写在公开 README 中；如需本机使用说明，见 `docs/使用手册.md`。
 
 ## 本地启动
 
@@ -47,17 +38,7 @@ cp .env.example .env.local
 npm run start
 ```
 
-本地地址：
-
-```text
-http://127.0.0.1:8787
-```
-
-后台入口：
-
-```text
-http://127.0.0.1:8787/admin
-```
+本地默认监听 `127.0.0.1:8787`。生产域名、Cloudflare Tunnel、Brevo sender 等信息请放在私有部署文档或 `.env.local`，不要写进公开 README。
 
 ## 文档
 

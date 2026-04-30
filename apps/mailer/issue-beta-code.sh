@@ -42,7 +42,7 @@ process.stdout.write(JSON.stringify(payload));
 NODE
 )"
 
-BASE_URL="${MAILER_BASE_URL:-https://mail.crushlc.site}"
+BASE_URL="${MAILER_BASE_URL:-http://127.0.0.1:8787}"
 
 curl -s "$BASE_URL/api/issue-beta-code" \
   -H "Content-Type: application/json" \

@@ -4,29 +4,7 @@
 
 这是 Crush LeetCode 的服务端仓库。当前实现的是官方周报邮件服务，未来可继续承载插件相关 API。
 
-仓库路径：
-
-```text
-/Users/cyh/Desktop/Code/tools/leetcode_plugins/crush-leetcode-services
-```
-
-当前运行中的生产服务仍由本机自托管目录提供：
-
-```text
-/Users/cyh/Desktop/Code/tools/leetcode_plugins/crush_leetcode_mailer_service
-```
-
-如果要切换生产服务到本仓库，应进入：
-
-```text
-apps/mailer
-```
-
-然后启动：
-
-```bash
-npm run start
-```
+不要在公开文档中写入真实生产域名、Tunnel ID、本机绝对路径、Brevo sender 或任何 secret。
 
 ## 目录结构
 
@@ -35,7 +13,7 @@ apps/mailer/                 官方周报邮件服务
 packages/shared/schemas/     未来放接口 schema
 packages/shared/types/       未来放共享类型
 packages/shared/crypto/      未来放共享 crypto helper
-docs/使用手册.md              给用户看的中文说明
+docs/使用手册.md              给用户看的通用中文说明
 docs/AGENTS.md               给 Agent 的接手说明
 ```
 
@@ -77,11 +55,10 @@ node --check api/issue-beta-code.js
 node --check api/send-reminder.js
 ```
 
-健康检查：
+本机健康检查：
 
 ```bash
 curl -X POST http://127.0.0.1:8787/api/health
-curl -X POST https://mail.crushlc.site/api/health
 ```
 
 ## Secret 规则
@@ -112,13 +89,11 @@ BETA_ADMIN_SESSION_SECRET
 
 插件邮件接口：
 
-- `POST /api/send-reminder`
-- Header `X-Crush-Secret`
-- 对比 `REMINDER_SHARED_SECRET`
+- 邮件发送接口需要 Header `X-Crush-Secret`
+- 与 `REMINDER_SHARED_SECRET` 做 timing-safe compare
 
 后台登录：
 
-- `POST /api/admin/session`
 - 用户名默认 `admin`
 - 密码优先 `BETA_ADMIN_PASSWORD`
 - 未配置时兼容 `BETA_ADMIN_SECRET`
@@ -155,11 +130,4 @@ beta_access_codes
 
 ## 和插件的契约
 
-插件侧默认请求：
-
-```text
-POST https://mail.crushlc.site/api/send-reminder
-Header: X-Crush-Secret
-```
-
-只要域名和接口契约不变，后端内部目录或部署方式变化不需要改插件。
+插件侧需要调用服务端邮件发送接口，并携带共享密钥。不要在公开文档中写真实生产域名；真实域名应通过插件配置、构建变量或私有部署文档维护。
