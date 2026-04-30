@@ -74,4 +74,4 @@ Required environment variables are documented in `.env.example`. Real deployment
 
 ## License
 
-No license has been selected yet.
+MIT
