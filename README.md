@@ -1,8 +1,20 @@
 # Crush LeetCode Services
 
-Crush LeetCode 的服务端仓库。当前包含官方周报邮件服务，后续插件相关 API 也可以继续放在这里。
+Service backend for [Crush LeetCode](https://github.com/oldtommmy/crush-leetcode), focused on official reminder delivery, beta access management, and future extension-facing APIs.
 
-## 目录结构
+This repository is intentionally small and self-host friendly. The current app uses plain Node.js, SQLite, and server-rendered static admin pages so it can run on a lightweight personal server without a full backend framework.
+
+## Features
+
+- Official weekly digest and reminder email relay.
+- Server-side email provider credential isolation.
+- Beta access code issuance, validation, revocation, and audit.
+- Lightweight admin console with username/password login and HttpOnly session cookies.
+- SQLite-backed user and access-code storage.
+- HMAC-hashed beta codes; plaintext codes are only shown once at issuance time.
+- Basic in-memory rate limits for public-facing endpoints.
+
+## Repository Layout
 
 ```text
 crush-leetcode-services/
@@ -12,25 +24,30 @@ crush-leetcode-services/
       api/
       admin.html
       admin-dashboard.html
+      admin-logo.png
   packages/
     shared/
       schemas/
       types/
       crypto/
-  docs/
-    使用手册.md
-    AGENTS.md
   .env.example
   README.md
 ```
 
-## 当前服务
+## Apps
 
-`apps/mailer` 是官方周报邮件服务，包含邮件发送、内测访问码和后台管理能力。
+### `apps/mailer`
 
-具体接口和部署地址不要写在公开 README 中；如需本机使用说明，见 `docs/使用手册.md`。
+The mailer app provides the current production service surface:
 
-## 本地启动
+- Email relay for extension-triggered reminders and weekly digests.
+- Admin session handling.
+- User management and beta-code management.
+- Health check endpoint.
+
+The app is written in CommonJS and uses only built-in Node.js modules plus SQLite from the local Node runtime.
+
+## Local Development
 
 ```bash
 cd apps/mailer
@@ -38,24 +55,23 @@ cp .env.example .env.local
 npm run start
 ```
 
-本地默认监听 `127.0.0.1:8787`。生产域名、Cloudflare Tunnel、Brevo sender 等信息请放在私有部署文档或 `.env.local`，不要写进公开 README。
+By default, the service listens on `127.0.0.1:8787`.
 
-## 文档
+Required environment variables are documented in `.env.example`. Real deployment domains, tunnel configuration, sender addresses, and secrets should stay in private deployment notes or local environment files.
 
-- 使用说明：[docs/使用手册.md](docs/使用手册.md)
-- Agent 接手说明：[docs/AGENTS.md](docs/AGENTS.md)
+## Security Model
 
-## 安全注意
+- Extension requests are authenticated with a shared server-side secret.
+- Admin APIs accept an HttpOnly session cookie or an admin secret for local scripts.
+- Beta access codes are stored as HMAC hashes, not plaintext.
+- SQLite runtime data and all `.env*` files are ignored by Git.
+- Public documentation avoids production domains, tunnel IDs, sender configuration, and local absolute paths.
+- Basic per-IP rate limits are built in; gateway-level rate limiting is still recommended for larger deployments.
 
-不要提交：
+## Shared Packages
 
-- `.env.local`
-- `.env.beta.local`
-- `.data/`
-- `*.sqlite`
-- Brevo API Key
-- beta/admin/session secrets
+`packages/shared` is reserved for future reusable schemas, types, and crypto helpers as the service surface grows. It is currently a placeholder so later APIs can be added without reshaping the repository.
 
-数据库只保存 beta code 的 HMAC hash，不保存明文 code。
+## License
 
-服务内置基础内存 rate limit，用于降低公开接口被扫时的压力。生产环境如果有更高流量或多实例部署，建议再接入网关层 rate limit。
+No license has been selected yet.

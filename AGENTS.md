@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-This repository hosts Crush LeetCode service code. The active service is `apps/mailer`, a Node.js HTTP server for reminder email delivery, beta-code issuance, and the admin console. API route handlers live in `apps/mailer/api/`, static admin pages live beside `server.js`, and mailer environment templates are `apps/mailer/.env.example` and `.env.local.example`. Shared package directories under `packages/shared/` are placeholders for future schemas, types, and crypto helpers. User and agent documentation lives in `docs/`.
+This repository hosts Crush LeetCode service code. The active service is `apps/mailer`, a Node.js HTTP server for reminder email delivery, beta-code issuance, and the admin console. API route handlers live in `apps/mailer/api/`, static admin pages live beside `server.js`, and mailer environment templates are `apps/mailer/.env.example` and `.env.local.example`. Shared package directories under `packages/shared/` are placeholders for future schemas, types, and crypto helpers.
 
 ## Build, Test, and Development Commands
 
