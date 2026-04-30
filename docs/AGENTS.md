@@ -111,6 +111,18 @@ Beta code：
 - 明文 code 只在签发接口返回一次
 - 不要新增明文 code 持久化
 
+## Rate Limit
+
+`apps/mailer/api/_lib.js` 内置单进程内存 rate limit：
+
+```text
+mailer:    30 requests / minute / IP
+adminAuth: 10 requests / 5 minutes / IP
+adminApi:  120 requests / minute / IP
+```
+
+命中限制返回 `429` 和 `Retry-After`。这是基础防扫保护，不是分布式限流；多实例或高流量生产环境应接网关层 rate limit。
+
 ## 数据库
 
 SQLite 默认路径：

@@ -1,4 +1,5 @@
 const {
+  checkRateLimit,
   handleOptions,
   requireBetaAccess,
   requirePost,
@@ -30,6 +31,10 @@ module.exports = async function handler(req, res) {
   setCorsHeaders(res);
 
   try {
+    if (!checkRateLimit(req, res, 'mailer')) {
+      return;
+    }
+
     // 3. Method check
     if (!requirePost(req, res)) {
       return;

@@ -1,4 +1,5 @@
 const {
+  checkRateLimit,
   handleOptions,
   issueBetaCode,
   requireAdminSecret,
@@ -18,6 +19,10 @@ module.exports = async function handler(req, res) {
   setCorsHeaders(res);
 
   try {
+    if (!checkRateLimit(req, res, 'adminApi')) {
+      return;
+    }
+
     if (!requirePost(req, res)) {
       return;
     }

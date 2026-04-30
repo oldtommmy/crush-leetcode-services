@@ -57,3 +57,5 @@ npm run start
 - beta/admin/session secrets
 
 数据库只保存 beta code 的 HMAC hash，不保存明文 code。
+
+服务内置基础内存 rate limit，用于降低公开接口被扫时的压力。生产环境如果有更高流量或多实例部署，建议再接入网关层 rate limit。

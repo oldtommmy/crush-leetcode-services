@@ -8,8 +8,14 @@ const WEEKLY_PAYLOAD_LIMIT_BYTES = 30000;
 const DEFAULT_BETA_CODE_TTL_DAYS = 180;
 const ADMIN_SESSION_COOKIE = 'crush_admin_session';
 const ADMIN_SESSION_TTL_SECONDS = 60 * 60 * 12;
+const RATE_LIMITS = {
+  mailer: { windowMs: 60 * 1000, max: 30 },
+  adminAuth: { windowMs: 5 * 60 * 1000, max: 10 },
+  adminApi: { windowMs: 60 * 1000, max: 120 }
+};
 
 let betaDb;
+const rateLimitBuckets = new Map();
 
 function setCorsHeaders(res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -32,6 +38,73 @@ function requirePost(req, res) {
     res.status(405).json({ ok: false, error: 'Method not allowed.' });
     return false;
   }
+  return true;
+}
+
+function clientIp(req) {
+  const forwardedFor = Array.isArray(req.headers['x-forwarded-for'])
+    ? req.headers['x-forwarded-for'][0]
+    : req.headers['x-forwarded-for'];
+  if (forwardedFor && typeof forwardedFor === 'string') {
+    return forwardedFor.split(',')[0].trim() || 'unknown';
+  }
+  const cfConnectingIp = Array.isArray(req.headers['cf-connecting-ip'])
+    ? req.headers['cf-connecting-ip'][0]
+    : req.headers['cf-connecting-ip'];
+  if (cfConnectingIp && typeof cfConnectingIp === 'string') {
+    return cfConnectingIp.trim() || 'unknown';
+  }
+  return req.socket?.remoteAddress || 'unknown';
+}
+
+function rateLimitConfig(scope) {
+  const config = RATE_LIMITS[scope];
+  if (!config) {
+    throw new Error(`Unknown rate limit scope: ${scope}`);
+  }
+  return config;
+}
+
+function pruneRateLimitBuckets(now = Date.now()) {
+  if (rateLimitBuckets.size < 1000) {
+    return;
+  }
+
+  for (const [key, bucket] of rateLimitBuckets.entries()) {
+    if (bucket.resetAt <= now) {
+      rateLimitBuckets.delete(key);
+    }
+  }
+}
+
+function checkRateLimit(req, res, scope) {
+  const config = rateLimitConfig(scope);
+  const now = Date.now();
+  pruneRateLimitBuckets(now);
+
+  const key = `${scope}:${clientIp(req)}`;
+  const current = rateLimitBuckets.get(key);
+  const bucket = current && current.resetAt > now
+    ? current
+    : { count: 0, resetAt: now + config.windowMs };
+  bucket.count += 1;
+  rateLimitBuckets.set(key, bucket);
+
+  const remaining = Math.max(0, config.max - bucket.count);
+  const retryAfterSeconds = Math.max(1, Math.ceil((bucket.resetAt - now) / 1000));
+  res.setHeader('X-RateLimit-Limit', String(config.max));
+  res.setHeader('X-RateLimit-Remaining', String(remaining));
+  res.setHeader('X-RateLimit-Reset', String(Math.ceil(bucket.resetAt / 1000)));
+
+  if (bucket.count > config.max) {
+    res.setHeader('Retry-After', String(retryAfterSeconds));
+    res.status(429).json({
+      ok: false,
+      error: 'Too many requests. Please retry later.'
+    });
+    return false;
+  }
+
   return true;
 }
 
@@ -1304,6 +1377,7 @@ async function sendWithBrevo(payload) {
 
 module.exports = {
   clearAdminSessionCookie,
+  checkRateLimit,
   createAdminSessionCookie,
   getAdminSession,
   handleOptions,

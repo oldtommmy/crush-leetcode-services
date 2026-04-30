@@ -1,4 +1,5 @@
 const {
+  checkRateLimit,
   clearAdminSessionCookie,
   createAdminSessionCookie,
   getAdminSession,
@@ -15,6 +16,10 @@ module.exports = async function handler(req, res) {
   setCorsHeaders(res);
 
   try {
+    if (!checkRateLimit(req, res, 'adminAuth')) {
+      return;
+    }
+
     if (req.method === 'GET') {
       const session = getAdminSession(req);
       return res.status(200).json({

@@ -42,3 +42,5 @@ The current history uses Conventional Commit style, for example `chore: initiali
 ## Security & Configuration Tips
 
 Never commit `.env.local`, `.env.beta.local`, `.data/`, `*.sqlite`, Brevo API keys, beta/admin secrets, or session secrets. Public docs should not include production domains, tunnel IDs, local absolute paths, or real sender configuration. Beta codes must remain write-once secrets: persist only HMAC hashes, not plaintext codes.
+
+The mailer has basic in-memory rate limits in `apps/mailer/api/_lib.js`: mailer 30/min/IP, admin auth 10/5min/IP, admin API 120/min/IP. Keep or strengthen this before making public deployments discoverable.
